@@ -1,7 +1,14 @@
+//Code By Jose Soto 
+//Use of previous lab code is involved in sections
 
+
+//Definitions
 #define RDA 0x80
 #define TBE 0x20  
+//
 
+
+//ADC and Serial direct registers
 volatile unsigned char *myUCSR0A = (unsigned char *)0x00C0;
 volatile unsigned char *myUCSR0B = (unsigned char *)0x00C1;
 volatile unsigned char *myUCSR0C = (unsigned char *)0x00C2;
@@ -12,25 +19,34 @@ volatile unsigned char* my_ADMUX = (unsigned char*) 0x7C;
 volatile unsigned char* my_ADCSRB = (unsigned char*) 0x7B;
 volatile unsigned char* my_ADCSRA = (unsigned char*) 0x7A;
 volatile unsigned int* my_ADC_DATA = (unsigned int*) 0x78;
+//
 
+
+//Setting up the program
 void setup() {
   // setup the UART
   U0init(9600);
   // setup the ADC
   adc_init();
 }
+//
 
+
+//Reading the analog signal and displaying the result
 void loop() {
   //read voltage from ADC
-  unsigned int WaterLevel = adc_read(0); 
+  unsigned int Vreading = adc_read(0); 
 
   //send voltage over serial
-  send_WL(WaterLevel);
+  send_WL(Vreading);
 
   //delay
   delay(1000); //delay for 1 sec
 }
+//
 
+
+//ADC Initiliazing 
 void adc_init()
 {
   // setup the A register
@@ -47,7 +63,10 @@ void adc_init()
   *my_ADMUX  &= 0b11011111; // clear bit 5 to 0 for right adjust result
   *my_ADMUX  &= 0b11100000; // clear bit 4-0 to 0 to reset the channel and gain bits
 }
+//
 
+
+//Reading the analog signal directly function
 unsigned int adc_read(unsigned char adc_channel_num)
 {
   // clear the channel selection bits (MUX 4:0)
@@ -71,7 +90,10 @@ unsigned int adc_read(unsigned char adc_channel_num)
   // return the result in the ADC data register
   return *my_ADC_DATA;
 }
+//
 
+
+//Display Functions
 void U0init(int U0baud)
 {
  unsigned long FCPU = 16000000;
@@ -96,11 +118,13 @@ void U0putchar(unsigned char U0pdata)
   while((*myUCSR0A & TBE)==0);
   *myUDR0 = U0pdata;
 }
+//
 
 
-void send_WL(unsigned int WaterLevel) {
+//Converting reading to water level in centimeters
+void send_WL(unsigned int Vreading) {
   // Convert ADC reading to voltage (assuming 5V reference and 10-bit ADC)
-  float voltage = WaterLevel * (5.0 / 1023.0);
+  float voltage = Vreading * (5.0 / 1023.0);
 
   // Convert voltage to centimeters (assuming a linear sensor as described earlier)
   float distance_cm = (voltage / 5.0) * 10;
@@ -120,6 +144,9 @@ void send_WL(unsigned int WaterLevel) {
   U0putchar((unsigned char)(fractional_part / 10) + '0');
   U0putchar((unsigned char)(fractional_part % 10) + '0');
 
+  U0putchar('c');
+  U0putchar('m');
   // Send newline character
   U0putchar('\n');
 }
+//
