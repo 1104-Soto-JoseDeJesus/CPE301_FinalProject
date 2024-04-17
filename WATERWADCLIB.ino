@@ -2,6 +2,18 @@
 //Use of previous lab code is involved in sections
 
 
+//LCD
+#include <LiquidCrystal.h>
+
+const int RS = 11, EN = 12, D4 = 2, D5 = 3, D6 = 4, D7 = 5;
+
+LiquidCrystal lcd(RS, EN, D4, D5, D6, D7);
+
+float distance_cm;
+//
+
+
+
 //Definitions
 #define RDA 0x80
 #define TBE 0x20  
@@ -28,6 +40,12 @@ void setup() {
   U0init(9600);
   // setup the ADC
   adc_init();
+
+  //Initializing LCD
+    lcd.begin(16, 2);
+  //
+
+
 }
 //
 
@@ -39,6 +57,19 @@ void loop() {
 
   //send voltage over serial
   send_WL(Vreading);
+
+//LCD Error Message
+  if(distance_cm <= 1.00){
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("Water Level is");
+    lcd.setCursor(0, 1);
+    lcd.print("too Low");
+  }
+  else{
+    lcd.clear();
+  }
+//
 
   //delay
   delay(1000); //delay for 1 sec
@@ -127,7 +158,7 @@ void send_WL(unsigned int Vreading) {
   float voltage = Vreading * (5.0 / 1023.0);
 
   // Convert voltage to centimeters (assuming a linear sensor as described earlier)
-  float distance_cm = (voltage / 5.0) * 10;
+  distance_cm = (voltage / 5.0) * 10;
 
   // Extract the integer part of the distance
   unsigned int integer_part = (unsigned int)distance_cm;
