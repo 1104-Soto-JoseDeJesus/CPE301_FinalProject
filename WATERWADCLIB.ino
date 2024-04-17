@@ -2,6 +2,13 @@
 //Use of previous lab code is involved in sections
 
 
+
+//PDO - Red LED Registers
+volatile unsigned char* port_d = (unsigned char*) 0x2B;
+volatile unsigned char* ddr_d  = (unsigned char*) 0x2A;
+//
+
+
 //LCD
 #include <LiquidCrystal.h>
 
@@ -11,7 +18,6 @@ LiquidCrystal lcd(RS, EN, D4, D5, D6, D7);
 
 float distance_cm;
 //
-
 
 
 //Definitions
@@ -41,8 +47,11 @@ void setup() {
   // setup the ADC
   adc_init();
 
+  //PD0 set to Output
+  *ddr_d |= 0x01;
+
   //Initializing LCD
-    lcd.begin(16, 2);
+  lcd.begin(16, 2);
   //
 
 
@@ -65,8 +74,10 @@ void loop() {
     lcd.print("Water Level is");
     lcd.setCursor(0, 1);
     lcd.print("too Low");
+    *port_d |= 0x01;
   }
   else{
+    *port_d &= 0x2A;
     lcd.clear();
   }
 //
