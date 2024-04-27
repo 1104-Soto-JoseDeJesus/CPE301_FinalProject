@@ -20,6 +20,8 @@ volatile unsigned char* ddr_e  = (unsigned char*) 0x2D;
 int reset = 0;
 //
 
+//RTC library
+#include <RTClib.h>
 
 
 //Temp and humidity sensor
@@ -87,6 +89,8 @@ volatile unsigned int* my_ADC_DATA = (unsigned int*) 0x78;
 void setup() {
   // setup the UART
   U0init(9600);
+  //setup the RTC Module
+  setupRTC();
   // setup the ADC
   adc_init();
 
@@ -304,3 +308,77 @@ void my_delay(unsigned int freq)
   // reset TOV           
   *myTIFR1 |= 0x01;
 }//
+
+
+
+//RTC Functions
+
+void setupRTC() {
+
+  if (!rtc.begin()) {
+    U0putchar('N');
+    U0putchar('o');
+    U0putchar(' ');
+    U0putchar('R');
+    U0putchar('T');
+    U0putchar('C');
+    U0putchar('\n');
+    while (1) delay(10);
+  }
+
+  if (!rtc.isrunning()) {
+    U0putchar('R');
+    U0putchar('T');
+    U0putchar('C');
+    U0putchar(' ');
+    U0putchar('N');
+    U0putchar('O');
+    U0putchar('T');
+    U0putchar(' ');
+    U0putchar('r');
+    U0putchar('u');
+    U0putchar('n');
+    U0putchar('n');
+    U0putchar('i');
+    U0putchar('n');
+    U0putchar('g');
+    U0putchar('\n');
+    rtc.adjust(DateTime(2024, 4, 27, 2, 19, 0)); // Adjust as needed
+  }
+}
+
+void printTime() {
+    DateTime now = rtc.now();
+
+    // Extract time components
+    int hour = now.hour();
+    int minute = now.minute();
+    int second = now.second();
+
+    // Output hour (tens digit)
+    U0putchar('0' + hour / 10);
+
+    // Output hour (ones digit)
+    U0putchar('0' + hour % 10);
+
+    // Output colon separator
+    U0putchar(':');
+
+    // Output minute (tens digit)
+    U0putchar('0' + minute / 10);
+
+    // Output minute (ones digit)
+    U0putchar('0' + minute % 10);
+
+    // Output colon separator
+    U0putchar(':');
+
+    // Output second (tens digit)
+    U0putchar('0' + second / 10);
+
+    // Output second (ones digit)
+    U0putchar('0' + second % 10);
+
+    // Output newline character (optional)
+    U0putchar('\n');
+}
