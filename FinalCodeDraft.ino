@@ -268,12 +268,12 @@ if(saveval == 0){
     lcd.clear();
     lcd.setCursor(0, 0);
     lcd.print("SYSTEM DISABLED");
-    delay(500);
+    my_delay(500);
   buttonState = digitalRead(22);
   if(buttonState == HIGH){
     saveval = 1;
     lcd.clear();
-    delay(250);
+    my_delay(250);
   }
 
 }
@@ -282,9 +282,9 @@ if(saveval == 1){
   buttonState = digitalRead(22);
   if(buttonState == HIGH){
     saveval = 0;
-    delay(250);
+    my_delay(250);
   }
-  delay(500);
+  my_delay(500);
   digitalWrite(24, LOW);
 
   //read voltage from ADC
@@ -345,7 +345,7 @@ if(saveval == 1){
     digitalWrite(in1, HIGH);
     digitalWrite(in2, LOW);
     analogWrite(enA, 255); // Set the fan to maximum speed
-    delay(25);
+    my_delay(25);
     lcd.clear();
     lcd.setCursor(0, 0);
     lcd.print("FAN RUNNING");
@@ -530,7 +530,7 @@ void setupRTC() {
     U0putchar('T');
     U0putchar('C');
     U0putchar('\n');
-    while (1) delay(10);
+    while (1) my_delay(10);
   }
 
   if (!rtc.isrunning()) {
