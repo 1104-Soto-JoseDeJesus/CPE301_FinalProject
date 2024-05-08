@@ -9,7 +9,7 @@
 //Start Stop button / Yellow LED: Evita Kanaan
 //RTC: Kyla Trotter
 //Fan: Evita Kanaan
-//Overview: Evita Kanaan & Kyla Trotter
+//Overview: Evita Kanaan, Kyla Trotter & Jose Soto
 //Water Sensor: Jose Soto
 //Error to Idle Reset buttton: Jose Soto
 //Stepper Motor: Jose Soto
