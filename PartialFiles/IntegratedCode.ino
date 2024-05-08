@@ -22,6 +22,7 @@ int reset = 0;
 
 //RTC library
 #include <RTClib.h>
+RTC_DS1307 rtc;
 
 
 //Temp and humidity sensor

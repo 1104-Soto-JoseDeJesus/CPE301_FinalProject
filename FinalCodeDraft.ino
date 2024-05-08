@@ -31,6 +31,10 @@
 #include <LiquidCrystal.h>
 // 
 
+//RTC library
+#include <RTClib.h>
+RTC_DS1307 rtc;
+
 //Defining temp sensor
 #define DHTTYPE    DHT11     // DHT 11
 #define DHTPIN 7
@@ -174,6 +178,8 @@ void setup() {
   //Temp sensor initializing
   dht.begin();
   //
+
+  setupRTC();
 }
 //
 
@@ -295,7 +301,7 @@ if(saveval == 1){
 
   //Reset functionality
   if(reset == 0 && distance_cm >= 1.00 && temp <= 24){
-  
+
   //Temp sensor timer
   unsigned long currentMillis = millis();
   if(currentMillis - previousMillis >= interval){
@@ -319,6 +325,7 @@ if(saveval == 1){
     digitalWrite(in1, LOW);
     digitalWrite(in2, LOW);
     //
+    printTime();
 
     //Turning on Green light
     *port_e |= 0x08;
@@ -334,6 +341,7 @@ if(saveval == 1){
 
 
   else if(reset == 0 && distance_cm >= 1.00 && temp >= 24){
+    printTime();
     digitalWrite(in1, HIGH);
     digitalWrite(in2, LOW);
     analogWrite(enA, 255); // Set the fan to maximum speed
@@ -348,6 +356,8 @@ if(saveval == 1){
 
 //LCD Error Message
   if(distance_cm <= 1.00){
+    printTime();
+
     lcd.clear();
     lcd.setCursor(0, 0);
     lcd.print("Water Level is");
@@ -367,6 +377,7 @@ if(saveval == 1){
         reset = 0;
        *port_d &= 0x2A;
         lcd.clear();
+        printTime();
       }
   }
 }
@@ -503,3 +514,78 @@ void my_delay(unsigned int freq)
   // reset TOV           
   *myTIFR1 |= 0x01;
 }//
+
+
+
+
+//RTC Functions
+
+void setupRTC() {
+
+  if (!rtc.begin()) {
+    U0putchar('N');
+    U0putchar('o');
+    U0putchar(' ');
+    U0putchar('R');
+    U0putchar('T');
+    U0putchar('C');
+    U0putchar('\n');
+    while (1) delay(10);
+  }
+
+  if (!rtc.isrunning()) {
+    U0putchar('R');
+    U0putchar('T');
+    U0putchar('C');
+    U0putchar(' ');
+    U0putchar('N');
+    U0putchar('O');
+    U0putchar('T');
+    U0putchar(' ');
+    U0putchar('r');
+    U0putchar('u');
+    U0putchar('n');
+    U0putchar('n');
+    U0putchar('i');
+    U0putchar('n');
+    U0putchar('g');
+    U0putchar('\n');
+    rtc.adjust(DateTime(2024, 5, 8, 10, 15, 0)); // Adjust as needed
+  }
+}
+
+void printTime() {
+    DateTime now = rtc.now();
+
+    // Extract time components
+    int hour = now.hour();
+    int minute = now.minute();
+    int second = now.second();
+
+    // Output hour (tens digit)
+    U0putchar('0' + hour / 10);
+
+    // Output hour (ones digit)
+    U0putchar('0' + hour % 10);
+
+    // Output colon separator
+    U0putchar(':');
+
+    // Output minute (tens digit)
+    U0putchar('0' + minute / 10);
+
+    // Output minute (ones digit)
+    U0putchar('0' + minute % 10);
+
+    // Output colon separator
+    U0putchar(':');
+
+    // Output second (tens digit)
+    U0putchar('0' + second / 10);
+
+    // Output second (ones digit)
+    U0putchar('0' + second % 10);
+
+    // Output newline character (optional)
+    U0putchar('\n');
+}
