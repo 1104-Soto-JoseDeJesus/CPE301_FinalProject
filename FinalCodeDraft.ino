@@ -16,9 +16,6 @@
 //LCD Screen w/potentiometer: Jose Soto
 //Blue, Green, Red LED integration: Jose Soto
 //Code Integrating: Jose Soto
-//Circuit: Jose Soto
-//Schematic: Jose Soto
-//Video: Jose Soto
 
 //Temp and humidity sensor Libraries
 #include <Adafruit_Sensor.h>
