@@ -1,5 +1,24 @@
-//Code By Jose Soto 
 //Use of previous lab code is involved in sections
+
+//Disclaimers:
+//GPIO is used for the reset button, Green, Red, and Blue LEDS, due to time constrains and circuit complications Yellow LED and start stop button use library functions no ISR
+//Instead of a button or potentiometer, a switch is used for the stepper motor control
+//
+
+//Temp and Humidity Sensor: Kaila Trotter
+//Start Stop button / Yellow LED: Evita Kanaan
+//RTC: Kaila Trotter
+//Fan: Evita Kanaan
+//Overview: Evita Kanaan & Kaila Trotter
+//Water Sensor: Jose Soto
+//Error to Idle Reset buttton: Jose Soto
+//Stepper Motor: Jose Soto
+//LCD Screen w/potentiometer: Jose Soto
+//Blue, Green, Red LED integration: Jose Soto
+//Code Integrating: Jose Soto
+//Circuit: Jose Soto
+//Schematic: Jose Soto
+//Video: Jose Soto
 
 //Temp and humidity sensor Libraries
 #include <Adafruit_Sensor.h>
@@ -52,12 +71,12 @@ volatile unsigned char* ddr_e  = (unsigned char*) 0x2D;
 //reset button
 int reset = 0;
 int buttonState = 0;
-int saveval = 1;
+int saveval = 0;
 //
 
 //Display temp timer
 unsigned long previousMillis = 0;
-const long interval = 6000;
+const long interval = 60000;
 //
 
 //Timer Pointers
@@ -158,9 +177,6 @@ void setup() {
   //Temp sensor initializing
   dht.begin();
   //
-
-  //RTC Setup
-  setupRTC();
 }
 //
 
@@ -234,7 +250,6 @@ void loop() {
   //
 
 if(saveval == 0){
-    printTime();
     digitalWrite(24, HIGH);
     //Turn off Blue LED
     PORTD &= ~(1 << PD1);
@@ -243,13 +258,19 @@ if(saveval == 0){
     *port_d &= 0x2A;
     //
     *port_e &= 0x26;
+    //Fan OFF
+    digitalWrite(in1, LOW);
+    digitalWrite(in2, LOW);
+    //
     lcd.clear();
-    Serial.print(saveval);
+    lcd.setCursor(0, 0);
+    lcd.print("SYSTEM DISABLED");
     delay(500);
   buttonState = digitalRead(22);
   if(buttonState == HIGH){
     saveval = 1;
-    delay(1000);
+    lcd.clear();
+    delay(250);
   }
 
 }
@@ -260,8 +281,6 @@ if(saveval == 1){
     saveval = 0;
     delay(250);
   }
-
-  Serial.print(saveval);
   delay(500);
   digitalWrite(24, LOW);
 
@@ -279,7 +298,7 @@ if(saveval == 1){
 
   //Reset functionality
   if(reset == 0 && distance_cm >= 1.00 && temp <= 24){
-    printTime();
+  
   //Temp sensor timer
   unsigned long currentMillis = millis();
   if(currentMillis - previousMillis >= interval){
@@ -297,6 +316,7 @@ if(saveval == 1){
     lcd.print(event.relative_humidity);
     lcd.print(F("%"));
     //
+  }
 
     //Fan OFF
     digitalWrite(in1, LOW);
@@ -314,11 +334,9 @@ if(saveval == 1){
     //
 
   }
-  }
 
 
   else if(reset == 0 && distance_cm >= 1.00 && temp >= 24){
-    printTime();
     digitalWrite(in1, HIGH);
     digitalWrite(in2, LOW);
     analogWrite(enA, 255); // Set the fan to maximum speed
@@ -329,13 +347,10 @@ if(saveval == 1){
     PORTD |= (1 << PD1);
     *port_d &= 0x2A;
     *port_e &= 0x26;
-
-    Serial.print(temp);
   }
 
 //LCD Error Message
   if(distance_cm <= 1.00){
-    printTime();
     lcd.clear();
     lcd.setCursor(0, 0);
     lcd.print("Water Level is");
@@ -491,77 +506,3 @@ void my_delay(unsigned int freq)
   // reset TOV           
   *myTIFR1 |= 0x01;
 }//
-
-
-
-//RTC Functions
-
-void setupRTC() {
-
-  if (!rtc.begin()) {
-    U0putchar('N');
-    U0putchar('o');
-    U0putchar(' ');
-    U0putchar('R');
-    U0putchar('T');
-    U0putchar('C');
-    U0putchar('\n');
-    while (1) delay(10);
-  }
-
-  if (!rtc.isrunning()) {
-    U0putchar('R');
-    U0putchar('T');
-    U0putchar('C');
-    U0putchar(' ');
-    U0putchar('N');
-    U0putchar('O');
-    U0putchar('T');
-    U0putchar(' ');
-    U0putchar('r');
-    U0putchar('u');
-    U0putchar('n');
-    U0putchar('n');
-    U0putchar('i');
-    U0putchar('n');
-    U0putchar('g');
-    U0putchar('\n');
-    rtc.adjust(DateTime(2024, 5, 7, 11, 15, 0)); // Adjust as needed
-  }
-}
-
-void printTime() {
-    DateTime now = rtc.now();
-
-    // Extract time components
-    int hour = now.hour();
-    int minute = now.minute();
-    int second = now.second();
-
-    // Output hour (tens digit)
-    U0putchar('0' + hour / 10);
-
-    // Output hour (ones digit)
-    U0putchar('0' + hour % 10);
-
-    // Output colon separator
-    U0putchar(':');
-
-    // Output minute (tens digit)
-    U0putchar('0' + minute / 10);
-
-    // Output minute (ones digit)
-    U0putchar('0' + minute % 10);
-
-    // Output colon separator
-    U0putchar(':');
-
-    // Output second (tens digit)
-    U0putchar('0' + second / 10);
-
-    // Output second (ones digit)
-    U0putchar('0' + second % 10);
-
-    // Output newline character (optional)
-    U0putchar('\n');
-}
