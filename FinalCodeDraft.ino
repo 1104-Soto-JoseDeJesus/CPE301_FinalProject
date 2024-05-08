@@ -129,10 +129,6 @@ void setup() {
   DDRD |= (1 << PD1);
   //
 
-  //Yellow LED
-  DDRD |= (1 << PD2);
-  //
-
   //PD0 set to Output
   *ddr_d |= 0x01;
   //
@@ -240,7 +236,7 @@ void loop() {
   double temp = event.temperature;
 
   //Reset functionality
-  if(reset == 0 && distance_cm >= 1.00 && temp <= 21.5){
+  if(reset == 0 && distance_cm >= 1.00 && temp <= 24){
   
   //Temp sensor timer
   unsigned long currentMillis = millis();
@@ -274,15 +270,12 @@ void loop() {
     //Turning off RED Light
     *port_d &= 0x2A;
     //
-    //Turn off Yellow LED
-    PORTD &= ~(1 << PD2);
-    //
 
   }
   }
 
 
-  else if(reset == 0 && distance_cm >= 1.00 && temp >= 21.5){
+  else if(reset == 0 && distance_cm >= 1.00 && temp >= 24){
     digitalWrite(in1, HIGH);
     digitalWrite(in2, LOW);
     analogWrite(enA, 255); // Set the fan to maximum speed
@@ -293,7 +286,6 @@ void loop() {
     PORTD |= (1 << PD1);
     *port_d &= 0x2A;
     *port_e &= 0x26;
-    PORTD &= ~(1 << PD2);
 
     Serial.print(temp);
   }
@@ -308,21 +300,18 @@ void loop() {
     *port_e &= 0x26;
     *port_d |= 0x01;
     PORTD &= ~(1 << PD1);
-    PORTD &= ~(1 << PD2);
     reset = 1;
 
     digitalWrite(in1, LOW);
     digitalWrite(in2, LOW);
+  }
 
-   }
     if(distance_cm >= 1.00){
       if(*pin_k &= 0x04){
         reset = 0;
        *port_d &= 0x2A;
         lcd.clear();
       }
-
-  //
   }
 
   //delay
