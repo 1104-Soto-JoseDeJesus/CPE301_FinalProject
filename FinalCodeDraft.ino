@@ -51,7 +51,8 @@ volatile unsigned char* ddr_e  = (unsigned char*) 0x2D;
 
 //reset button
 int reset = 0;
-int start = 0;
+int buttonState = 0;
+int saveval = 1;
 //
 
 //Display temp timer
@@ -145,6 +146,11 @@ void setup() {
   *ddr_e |= 0x08;
   //
 
+  //Addition
+  pinMode(24, OUTPUT);
+  pinMode(22, INPUT);
+  //
+
   //Initializing LCD
   lcd.begin(16, 2);
   //
@@ -157,6 +163,7 @@ void setup() {
 
 //Loop begins
 void loop() {
+
   //Reading all digitial inputs from switch to control stepper motor
   int savevalue = switchvalue;
   int pin30 = digitalRead(30);
@@ -222,6 +229,37 @@ void loop() {
 	  myStepper.step(0);
   }
   //
+
+if(saveval == 0){
+    digitalWrite(24, HIGH);
+    //Turn off Blue LED
+    PORTD &= ~(1 << PD1);
+    //
+    //Turning off RED Light
+    *port_d &= 0x2A;
+    //
+    *port_e &= 0x26;
+    lcd.clear();
+    Serial.print(saveval);
+    delay(500);
+  buttonState = digitalRead(22);
+  if(buttonState == HIGH){
+    saveval = 1;
+    delay(1000);
+  }
+
+}
+
+if(saveval == 1){
+  buttonState = digitalRead(22);
+  if(buttonState == HIGH){
+    saveval = 0;
+    delay(250);
+  }
+
+  Serial.print(saveval);
+  delay(500);
+  digitalWrite(24, LOW);
 
   //read voltage from ADC
   unsigned int Vreading = adc_read(0); 
@@ -313,6 +351,7 @@ void loop() {
         lcd.clear();
       }
   }
+}
 
   //delay
   my_delay(1);
@@ -403,21 +442,21 @@ void send_WL(unsigned int Vreading) {
   unsigned int integer_part = (unsigned int)distance_cm;
 
   // Send the integer part
-  U0putchar((unsigned char)(integer_part / 10) + '0');
-  U0putchar((unsigned char)(integer_part % 10) + '0');
+  //U0putchar((unsigned char)(integer_part / 10) + '0');
+  //U0putchar((unsigned char)(integer_part % 10) + '0');
 
   // Send decimal point
-  U0putchar('.');
+  //U0putchar('.');
 
   // Calculate and send fractional part of distance
   unsigned int fractional_part = (distance_cm - integer_part) * 100;
-  U0putchar((unsigned char)(fractional_part / 10) + '0');
-  U0putchar((unsigned char)(fractional_part % 10) + '0');
+  //U0putchar((unsigned char)(fractional_part / 10) + '0');
+  //U0putchar((unsigned char)(fractional_part % 10) + '0');
 
-  U0putchar('c');
-  U0putchar('m');
+ // U0putchar('c');
+  //U0putchar('m');
   // Send newline character
-  U0putchar('\n');
+  //U0putchar('\n');
 }
 //
 
