@@ -5,11 +5,11 @@
 //Instead of a button or potentiometer, a switch is used for the stepper motor control
 //
 
-//Temp and Humidity Sensor: Kaila Trotter
+//Temp and Humidity Sensor: Kyla Trotter
 //Start Stop button / Yellow LED: Evita Kanaan
-//RTC: Kaila Trotter
+//RTC: Kyla Trotter
 //Fan: Evita Kanaan
-//Overview: Evita Kanaan & Kaila Trotter
+//Overview: Evita Kanaan & Kyla Trotter
 //Water Sensor: Jose Soto
 //Error to Idle Reset buttton: Jose Soto
 //Stepper Motor: Jose Soto
