@@ -158,6 +158,9 @@ void setup() {
   //Temp sensor initializing
   dht.begin();
   //
+
+  //RTC Setup
+  setupRTC();
 }
 //
 
@@ -231,6 +234,7 @@ void loop() {
   //
 
 if(saveval == 0){
+    printTime();
     digitalWrite(24, HIGH);
     //Turn off Blue LED
     PORTD &= ~(1 << PD1);
@@ -275,7 +279,7 @@ if(saveval == 1){
 
   //Reset functionality
   if(reset == 0 && distance_cm >= 1.00 && temp <= 24){
-  
+    printTime();
   //Temp sensor timer
   unsigned long currentMillis = millis();
   if(currentMillis - previousMillis >= interval){
@@ -314,6 +318,7 @@ if(saveval == 1){
 
 
   else if(reset == 0 && distance_cm >= 1.00 && temp >= 24){
+    printTime();
     digitalWrite(in1, HIGH);
     digitalWrite(in2, LOW);
     analogWrite(enA, 255); // Set the fan to maximum speed
@@ -330,6 +335,7 @@ if(saveval == 1){
 
 //LCD Error Message
   if(distance_cm <= 1.00){
+    printTime();
     lcd.clear();
     lcd.setCursor(0, 0);
     lcd.print("Water Level is");
@@ -485,3 +491,77 @@ void my_delay(unsigned int freq)
   // reset TOV           
   *myTIFR1 |= 0x01;
 }//
+
+
+
+//RTC Functions
+
+void setupRTC() {
+
+  if (!rtc.begin()) {
+    U0putchar('N');
+    U0putchar('o');
+    U0putchar(' ');
+    U0putchar('R');
+    U0putchar('T');
+    U0putchar('C');
+    U0putchar('\n');
+    while (1) delay(10);
+  }
+
+  if (!rtc.isrunning()) {
+    U0putchar('R');
+    U0putchar('T');
+    U0putchar('C');
+    U0putchar(' ');
+    U0putchar('N');
+    U0putchar('O');
+    U0putchar('T');
+    U0putchar(' ');
+    U0putchar('r');
+    U0putchar('u');
+    U0putchar('n');
+    U0putchar('n');
+    U0putchar('i');
+    U0putchar('n');
+    U0putchar('g');
+    U0putchar('\n');
+    rtc.adjust(DateTime(2024, 5, 7, 11, 15, 0)); // Adjust as needed
+  }
+}
+
+void printTime() {
+    DateTime now = rtc.now();
+
+    // Extract time components
+    int hour = now.hour();
+    int minute = now.minute();
+    int second = now.second();
+
+    // Output hour (tens digit)
+    U0putchar('0' + hour / 10);
+
+    // Output hour (ones digit)
+    U0putchar('0' + hour % 10);
+
+    // Output colon separator
+    U0putchar(':');
+
+    // Output minute (tens digit)
+    U0putchar('0' + minute / 10);
+
+    // Output minute (ones digit)
+    U0putchar('0' + minute % 10);
+
+    // Output colon separator
+    U0putchar(':');
+
+    // Output second (tens digit)
+    U0putchar('0' + second / 10);
+
+    // Output second (ones digit)
+    U0putchar('0' + second % 10);
+
+    // Output newline character (optional)
+    U0putchar('\n');
+}
