@@ -58,6 +58,11 @@ Stepper myStepper = Stepper(stepsPerRevolution, 13, 10, 9, 8);
 int switchvalue = 0;
 //
 
+//PA registers
+volatile unsigned char* pin_a  = (unsigned char*) 0x22;
+volatile unsigned char* ddr_a  = (unsigned char*) 0x21;
+volatile unsigned char* port_a = (unsigned char*) 0x20;
+
 //PK2 registers
 volatile unsigned char* pin_k  = (unsigned char*) 0x106;
 volatile unsigned char* ddr_k  = (unsigned char*) 0x0107;
@@ -67,6 +72,29 @@ volatile unsigned char* port_k = (unsigned char*) 0x108;
 //PE3 registers
 volatile unsigned char* port_e = (unsigned char*) 0x2E;
 volatile unsigned char* ddr_e  = (unsigned char*) 0x2D;
+volatile unsigned char* pinE = (unsigned char *) 0x2C;
+//
+
+//PC and PG Registers for switch
+volatile unsigned char* port_c = (unsigned char*) 0x28;
+volatile unsigned char* ddr_c  = (unsigned char*) 0x27;
+volatile unsigned char* pinC = (unsigned char *) 0x26;
+
+volatile unsigned char* port_g = (unsigned char*) 0x34;
+volatile unsigned char* ddr_g = (unsigned char*) 0x33;
+volatile unsigned char* pinG = (unsigned char *) 0x32;
+
+//
+
+//PL Register for fan
+volatile unsigned char* port_l = (unsigned char*) 0x10B;
+volatile unsigned char* ddr_l = (unsigned char*) 0x10A;
+volatile unsigned char* pinL = (unsigned char *) 0x109;
+
+//PDO - Red LED Registers
+volatile unsigned char* port_d = (unsigned char*) 0x2B;
+volatile unsigned char* ddr_d  = (unsigned char*) 0x2A;
+volatile unsigned char* pinD = (unsigned char *) 0x29;
 //
 
 //reset button
@@ -87,11 +115,6 @@ volatile unsigned char *myTCCR1C = (unsigned char *) 0x82;
 volatile unsigned char *myTIMSK1 = (unsigned char *) 0x6F;
 volatile unsigned int  *myTCNT1  = (unsigned  int *) 0x84;
 volatile unsigned char *myTIFR1 =  (unsigned char *) 0x36;
-//
-
-//PDO - Red LED Registers
-volatile unsigned char* port_d = (unsigned char*) 0x2B;
-volatile unsigned char* ddr_d  = (unsigned char*) 0x2A;
 //
 
 //LCD pins
@@ -127,15 +150,17 @@ volatile unsigned int* my_ADC_DATA = (unsigned int*) 0x78;
 void setup() {
 
   //Setting pins 30-39 as inputs for stepper motor
-  for (int pin = 30; pin <= 39; pin++) {
-    pinMode(pin, INPUT);
-  }
+  //pins 30 (PC7), 31 (PC6), 32 (PC5), 33 (PC4), 34 (PC3), 35 (PC2), 36 (PC1), 37 (PC0), 38 (PD7), 39 (PG2)
+  *ddr_c &= 0b00000000; // set all port c pins to input
+  *ddr_d &= 0b01111111; // set d7 to input
+  *ddr_g &= 0b11111011; // set g2 to input
   //
 
   //Fan Pin Modes
-  pinMode(enA, OUTPUT);
-  pinMode(in1, OUTPUT);
-  pinMode(in2, OUTPUT);
+  *ddr_l |= (1 << 4);  
+  *ddr_l |= (1 << 6);  
+  *ddr_g |= (1 << 0);
+
   //
 
   // setup the UART
@@ -167,9 +192,9 @@ void setup() {
   //
 
   //Addition
-  pinMode(24, OUTPUT);
-  pinMode(22, INPUT);
-  //
+  *ddr_a |= 0b00000100;
+  *ddr_a &= ~(1 << 0);
+
 
   //Initializing LCD
   lcd.begin(16, 2);
@@ -188,47 +213,47 @@ void loop() {
 
   //Reading all digitial inputs from switch to control stepper motor
   int savevalue = switchvalue;
-  int pin30 = digitalRead(30);
-  int pin31 = digitalRead(31);
-  int pin32 = digitalRead(32);
-  int pin33 = digitalRead(33);
-  int pin34 = digitalRead(34);
-  int pin35 = digitalRead(35);
-  int pin36 = digitalRead(36);
-  int pin37 = digitalRead(37);
-  int pin38 = digitalRead(38);
-  int pin39 = digitalRead(39);
+  int pin30 = (*port_c & (1 << 7)) >> 7;
+  int pin31 = (*port_c & (1 << 6)) >> 6;
+  int pin32 = (*port_c & (1 << 5)) >> 5;
+  int pin33 = (*port_c & (1 << 4)) >> 4;
+  int pin34 = (*port_c & (1 << 3)) >> 3;
+  int pin35 = (*port_c & (1 << 2)) >> 2;
+  int pin36 = (*port_c & (1 << 1)) >> 1;
+  int pin37 = (*port_c & (1 << 0));
+  int pin38 = (*port_d & (1 << 7)) >> 7;
+  int pin39 = (*port_g & (1 << 2)) >> 2;
   //
 
   //Cascading if statement for switch value to determine steps motor should take
-  if(pin30 ==  HIGH){
+  if(pin30 ==  1){
     switchvalue = 2000;
   }
-  else if(pin31 ==  HIGH){
+  else if(pin31 ==  1){
     switchvalue = 1600;
   }
-  else if(pin32 ==  HIGH){
+  else if(pin32 ==  1){
     switchvalue = 1200;
   }
-  else if(pin33 ==  HIGH){
+  else if(pin33 ==  1){
     switchvalue = 800;
   }
-  else if(pin34 ==  HIGH){
+  else if(pin34 ==  1){
     switchvalue = 400;
   }
-  else if(pin35 ==  HIGH){
+  else if(pin35 ==  1){
     switchvalue = -400;
   }
-  else if(pin36 ==  HIGH){
+  else if(pin36 ==  1){
     switchvalue = -800;
   }
-  else if(pin37 ==  HIGH){
+  else if(pin37 ==  1){
     switchvalue = -1200;
   }
-  else if(pin38 ==  HIGH){
+  else if(pin38 ==  1){
     switchvalue = -1600;
   }
-  else if(pin39 ==  HIGH){
+  else if(pin39 ==  1){
     switchvalue = -2000;
   }
   else{ 
@@ -253,7 +278,8 @@ void loop() {
   //
 
 if(saveval == 0){
-    digitalWrite(24, HIGH);
+    *port_a |= (1 << 2);
+    /
     //Turn off Blue LED
     PORTD &= ~(1 << PD1);
     //
@@ -262,14 +288,15 @@ if(saveval == 0){
     //
     *port_e &= 0x26;
     //Fan OFF
-    digitalWrite(in1, LOW);
-    digitalWrite(in2, LOW);
+    *port_l &= ~(1 << 6); 
+    *port_g &= ~(1 << 0);
+
     //
     lcd.clear();
     lcd.setCursor(0, 0);
     lcd.print("SYSTEM DISABLED");
     my_delay(500);
-  buttonState = digitalRead(22);
+  buttonState = (*pin_a & (1 << 0)) >> 0;
   if(buttonState == HIGH){
     saveval = 1;
     lcd.clear();
@@ -279,13 +306,14 @@ if(saveval == 0){
 }
 
 if(saveval == 1){
-  buttonState = digitalRead(22);
+  buttonState = (*pin_a & (1 << 0)) >> 0;
   if(buttonState == HIGH){
     saveval = 0;
     my_delay(250);
   }
   my_delay(500);
-  digitalWrite(24, LOW);
+  *port_a &= ~(1 << 2);
+
 
   //read voltage from ADC
   unsigned int Vreading = adc_read(0); 
@@ -322,8 +350,8 @@ if(saveval == 1){
   }
 
     //Fan OFF
-    digitalWrite(in1, LOW);
-    digitalWrite(in2, LOW);
+    *port_l &= ~(1 << 6); 
+    *port_g &= ~(1 << 0);
     //
     printTime();
 
@@ -342,8 +370,9 @@ if(saveval == 1){
 
   else if(reset == 0 && distance_cm >= 1.00 && temp >= 24){
     printTime();
-    digitalWrite(in1, HIGH);
-    digitalWrite(in2, LOW);
+    *port_l |= (1 << 6);
+    *port_g &= ~(1 << 0);
+
     analogWrite(enA, 255); // Set the fan to maximum speed
     my_delay(25);
     lcd.clear();
@@ -368,8 +397,9 @@ if(saveval == 1){
     PORTD &= ~(1 << PD1);
     reset = 1;
 
-    digitalWrite(in1, LOW);
-    digitalWrite(in2, LOW);
+    *port_l &= ~(1 << 6); 
+    *port_g &= ~(1 << 0); 
+
   }
 
     if(distance_cm >= 1.00){
@@ -382,7 +412,7 @@ if(saveval == 1){
   }
 }
 
-  //delay
+
   my_delay(1);
 }
 //
