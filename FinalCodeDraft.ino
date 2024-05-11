@@ -279,7 +279,7 @@ void loop() {
 
 if(saveval == 0){
     *port_a |= (1 << 2);
-    /
+    
     //Turn off Blue LED
     PORTD &= ~(1 << PD1);
     //
